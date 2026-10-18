@@ -166,3 +166,7 @@ real site data – the tests use synthetic files only.
 - Not included (as in the HTML version): Qt–Bq classification, GME `.Dxx` dissipation files, inclination from GME raw data.
 - Not affiliated with Geomil Equipment B.V.; CPTask is their product. The equations and processing steps follow publicly
   documented methods.
+
+## Licence
+
+MIT – see [LICENSE](LICENSE).
