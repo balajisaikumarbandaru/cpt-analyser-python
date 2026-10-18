@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+cpt_output/
+.DS_Store
+# keep real site data out of the repository – use tests/fixtures (synthetic) instead
+/data/
+.claude/
