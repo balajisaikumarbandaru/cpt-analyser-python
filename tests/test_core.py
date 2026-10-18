@@ -31,9 +31,27 @@ def test_spike_filter_removes_single_peak():
     a[30] = 9.0
     out = ca.spike_filter(a, 1, 4)
     assert out[30] == pytest.approx((a[29] + a[31]) / 2)
-    # Known quirk shared with the HTML version: a neighbour of the spike is judged against the
-    # spike itself and can be replaced too (here row 31 → ~5.0). See docs/KNOWN_ISSUES.md.
-    assert max(abs(x - y) for i, (x, y) in enumerate(zip(a, out)) if i not in (29, 30, 31)) < 0.05
+    # the readings beside the spike must not be touched (they used to be judged against it)
+    assert [i for i, (x, y) in enumerate(zip(a, out)) if x != y] == [30]
+
+
+def test_spike_filter_passes_remove_wider_peaks():
+    a = [1.0 + 0.01 * ((i * 7) % 5) for i in range(60)]
+    a[30], a[31] = 9.0, 8.0
+    assert ca.spike_filter(a, 1, 4)[31] == 8.0       # one pass only takes the top off a 2-sample peak
+    assert max(ca.spike_filter(a, 2, 4)[30:32]) < 5
+    out = ca.spike_filter(a, 5, 4)
+    assert max(out[30:32]) < 1.5
+    assert [i for i, (x, y) in enumerate(zip(a, out)) if x != y] == [30, 31]
+
+
+def test_semicolon_csv_with_decimal_commas(tmp_path):
+    src = FIX / "DEMO-03.csv"
+    p = tmp_path / "DEMO-03.csv"
+    p.write_text(src.read_text().replace(".", ","))   # 0,653;28,4;… – more commas than semicolons
+    a, b = ca.read(src), ca.read(p)
+    assert b.data["qc"][10] > 0
+    assert a.data["qc"] == b.data["qc"] and a.data["fs"] == b.data["fs"] and a.data["u2"] == b.data["u2"]
 
 
 def test_zone1990():

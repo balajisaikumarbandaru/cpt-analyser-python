@@ -1,15 +1,16 @@
 # Known issues and differences from the HTML version
 
-## Shared with the HTML version (kept identical on purpose, so both tools agree)
+## Fixed in both versions
 
-1. **Semicolon CSV with decimal commas is read wrongly.** In a file like `1,25;3,40;…` there are more commas than
-   semicolons, so the separator is detected as `,` and qc comes out as 0 – without an error. Workaround: save the CSV
-   with a full stop as decimal separator, or use Excel. Fix: detect `;` first when every line has the same number of
-   semicolons (`readers/tabular.py → parse_delimited`, and `parseDelimited` in the HTML).
-2. **Spike filter can disturb the sample next to a spike.** Each sample is judged against its neighbours *before* the
-   pass, so the reading beside a large spike can look like a negative spike and be replaced by roughly half the spike
-   value. Fix: judge neighbours against the already-filtered values, or exclude samples next to a detected spike in the
-   same pass (`processing.spike_filter` and `spikeFilter`).
+1. **Semicolon CSV with decimal commas was read wrongly.** In a file like `1,25;3,40;…` there are more commas than
+   semicolons, so the separator was detected as `,` and qc came out as 0 – without an error. Now `;` is used when
+   (nearly, ≥ 90 %) every line of the first 30 has the same non-zero number of semicolons
+   (`readers/tabular.py → parse_delimited`, and `parseDelimited` in the HTML).
+2. **Spike filter disturbed the sample next to a spike.** Each sample was judged against its neighbours *before* the
+   pass, so the reading beside a large spike looked like a negative spike and was replaced by roughly half the spike
+   value. Now a detected peak is only replaced if neither neighbour is a bigger detected peak in the same pass; the
+   neighbour is judged again in the next pass against the filtered values (`processing.spike_filter` and
+   `spikeFilter`). With the default of 1 pass, results of files with spikes change slightly against older versions.
 
 ## Fixed in Python only
 

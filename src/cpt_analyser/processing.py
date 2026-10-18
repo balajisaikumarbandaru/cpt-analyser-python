@@ -25,7 +25,8 @@ def median(a) -> float:
 def spike_filter(a, passes: int, k: float) -> list:
     """CPTask-style spike filter: a single-sample peak (local extreme that sticks out well
     beyond the local noise level) is replaced by the mean of its neighbours. Running it
-    N times removes peaks up to ~N samples wide."""
+    N times removes peaks up to ~N samples wide. A sample next to a bigger peak is left
+    alone in that pass: judged against that peak it only looks like its mirror image."""
     x = list(a)
     n = len(x)
     for _ in range(passes):
@@ -35,7 +36,7 @@ def spike_filter(a, passes: int, k: float) -> list:
             if fin(r):
                 dev.append(r)
         noise = 1.4826 * median(dev)
-        y = list(x)
+        s = [0.0] * n  # how far each detected peak sticks out, 0 = no peak
         for i in range(1, n - 1):
             a0, a1, a2 = x[i - 1], x[i], x[i + 1]
             if not (fin(a0) and fin(a1) and fin(a2)):
@@ -43,7 +44,11 @@ def spike_filter(a, passes: int, k: float) -> list:
             m = (a0 + a2) / 2
             thr = max(k * noise, 0.05 * abs(m), 1e-6)
             if (a1 > max(a0, a2) or a1 < min(a0, a2)) and abs(a1 - m) > thr:
-                y[i] = m
+                s[i] = abs(a1 - m)
+        y = list(x)
+        for i in range(1, n - 1):
+            if s[i] > 0 and s[i - 1] <= s[i] and s[i + 1] <= s[i]:
+                y[i] = (x[i - 1] + x[i + 1]) / 2
         x = y
     return x
 

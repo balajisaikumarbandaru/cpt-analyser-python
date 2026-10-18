@@ -35,8 +35,9 @@ Units: qc, fs, u, qt, qn in MPa; stresses in kPa; pa = 100 kPa. Function names r
 ## Spike filter (`spike_filter`)
 
 Per pass: noise = 1.4826 · median |xᵢ − (xᵢ₋₁ + xᵢ₊₁)/2|. A sample that is a local maximum or minimum and differs from
-the mean of its neighbours by more than max(k · noise, 5 % of that mean) is replaced by the mean. N passes remove peaks up
-to about N samples wide.
+the mean of its neighbours by more than max(k · noise, 5 % of that mean) is a peak. Each peak is replaced by the mean,
+unless a neighbour is a peak that sticks out further (that neighbour is then the real spike; this sample is judged again
+in the next pass). N passes remove peaks up to about N samples wide.
 
 ## Layers (`make_layers`)
 

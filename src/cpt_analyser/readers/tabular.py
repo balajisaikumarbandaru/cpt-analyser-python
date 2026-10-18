@@ -96,9 +96,12 @@ def parse_delimited(text: str, fname: str = "file.csv") -> CPT:
     lines = [ln for ln in re.split(r"\r?\n", text) if ln.strip()]
     sample = "\n".join(lines[:30])
     n_tab, n_semi, n_comma = sample.count("\t"), sample.count(";"), sample.count(",")
+    # same non-zero number of ';' on (nearly) every line → ';' separated, even with decimal commas (1,25;3,40;…)
+    semis = [ln.count(";") for ln in lines[:30]]
+    even_semi = any(c > 0 and semis.count(c) >= 0.9 * len(semis) for c in semis)
     if n_tab > 20:
         split = lambda s: s.split("\t")  # noqa: E731
-    elif n_semi > n_comma:
+    elif even_semi or n_semi > n_comma:
         split = lambda s: s.split(";")  # noqa: E731
     elif n_comma > 20:
         split = lambda s: s.split(",")  # noqa: E731
